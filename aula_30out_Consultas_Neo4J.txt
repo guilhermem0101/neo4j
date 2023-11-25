@@ -1,0 +1,70 @@
+//consultas com operadores e expressão regular REGEX
+// artistas que tem nome FORD
+MATCH (a:Artista)
+WHERE a.nome CONTAINS 'Ford'
+RETURN a.nome
+
+MATCH (a:Artista)
+WHERE toUpper(a.nome) CONTAINS 'FORD'
+RETURN a.nome
+// usando expressao regular
+MATCH (a:Artista)
+WHERE a.nome =~ '(?i).*ford.*'  // equivale a ILIKE '%ford%'
+RETURN a.nome
+ORDER BY a.nome
+// inicia com a palavra Ford
+MATCH (a:Artista)
+WHERE a.nome STARTS WITH 'Ford'
+RETURN a.nome
+// com regex
+MATCH (a:Artista)
+WHERE a.nome =~ '(?i)^ford.*'  // equivale a ILIKE 'ford%'
+RETURN a.nome
+ORDER BY a.nome
+// termina com a palavra Ford
+MATCH (a:Artista)
+WHERE a.nome ENDS WITH 'Ford'
+RETURN a.nome
+// com regex
+MATCH (a:Artista)
+WHERE a.nome =~ '.*Ford'  // equivale a ILIKE ' Ford%'
+RETURN a.nome
+ORDER BY a.nome
+// consultas usando o relacionamento elenco
+// (f)-[e:Elenco]->(a)   ()-[]->()
+// filmes em que o Harrison Ford trabalha como ator
+//MATCH (x)-[y:Elenco]->(z)
+MATCH (z)<-[y:Elenco]-(x)
+WHERE z.nome =~ '(?i)^harrison.*'
+AND z.nome =~ '(?i).*ford'
+AND y.tipo_participação = 'actor'
+AND z.local_nascto =~ '(?i).*chica.*'
+RETURN x,y,z
+// RETURN * 
+// quem trabalhou com o Harrison Ford - elencos
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^harrison.*'
+AND a1.nome =~ '(?i).*ford'
+AND a1.local_nascto =~ '(?i).*chica.*'
+AND e1.tipo_participação = 'actor'
+AND e2.tipo_participação =~ '(?i).*act.*' // actor e actress
+AND a1.nome <> a2.nome
+RETURN *
+
+// quem trabalhou com o Paulo Gustavo - elencos
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^paulo.*'
+AND a1.nome =~ '(?i).*gustavo'
+AND e1.tipo_participação = 'actor'
+AND e2.tipo_participação =~ '(?i).*act.*' // actor e actress
+AND a1.nome <> a2.nome
+RETURN *
+// filmes diriginfo De Niro com Martin Scorsese
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^robert.*'
+AND a1.nome =~ '(?i).*niro'
+AND e1.tipo_participação = 'actor'
+AND e2.tipo_participação =~ '(?i).*direc.*' // actor e actress
+AND a2.nome =~ '(?i)^mart.*'
+AND a1.nome <> a2.nome
+RETURN *

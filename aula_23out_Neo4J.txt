@@ -1,0 +1,79 @@
+// Aula 23-outubro NEO4J
+// limpando toda a base
+MATCH (n)
+DETACH DELETE n
+// nós para filmes
+CREATE (bolinha:Filme {nome: "Star Wars", ano_lançamento:1977,
+        gênero: "Ficção", estúdio : "George Lucas"} )
+RETURN bolinha
+// visualizando todos os filmes
+MATCH (f:Filme)
+RETURN f
+// mais de um filme 
+CREATE (f2:Filme {nome: "Missão Impossível", 
+ano_lançamento : 1996, gênero: ["Ação", "Aventura"],
+estúdio : "Paramount"} ),
+(f3:Filme {nome:"Cidade de Deus", ano_lançamento : 2002,
+gênero: "Drama", estúdio: "Globo Filmes"})
+RETURN f2, f3
+// RETURN *
+// mais de um artista
+CREATE (a1:Artista {nome: 'Harrison Ford', país: 'EUA',
+sexo: 'Masculino'}),
+(a2:Artista {nome: "Tom Cruise", país: "EUA", 
+sexo:"Masculino"}),
+(a3:Artista {nome: "Fernando Meirelles", país: "Brasil",
+sexo: "Masculino"})
+RETURN *
+// exibindo toda a base
+MATCH (n)
+RETURN n
+// relacionando artista com filme
+MATCH (f:Filme), (a:Artista)
+WHERE f.nome = "Star Wars"
+AND a.nome = "Harrison Ford"
+CREATE (f)-[e:Elenco {tipo_participação: "Ator",
+            personagem: "Hans Solo"}]->(a)
+RETURN f, a, e
+// criando duas arestas ao mesmo tempo
+MATCH (f1:Filme), (f2:Filme),(a1:Artista), (a2:Artista)
+WHERE f1.nome = "Missão Impossível"
+AND f2.nome = "Cidade de Deus"
+AND a1.nome = "Tom Cruise"
+AND a2.nome = "Fernando Meirelles"
+CREATE (f1)-[e1:Elenco {tipo_participação: "Ator",
+                        personagem: "Ethan Hunt"}]->(a1),
+(f2)-[e2:Elenco {tipo_participação: "Diretor"}]->(a2)
+RETURN *
+// novo artista
+CREATE (a1:Artista {nome: 'Carrie Fisher', país: 'EUA',
+sexo: 'Feminino'})
+RETURN a1
+// novo relacionamento artista e filme
+MATCH (f1:Filme {nome: "Star Wars"}), 
+      (a1:Artista {nome: 'Carrie Fisher'})
+CREATE (f1)-[e1:Elenco {tipo_participação: "Atriz",
+             personagem: "Princesa Leia"}]->(a1)	  
+RETURN *
+// consultando o elenco de guerra nas estrelas
+MATCH (coisa1)-[e:Elenco]->(coisa2)
+WHERE coisa1.nome = "Star Wars"
+RETURN *
+MATCH (f)-[e:Elenco]->(a)
+WHERE f.nome = "Star Wars"
+RETURN *
+
+MATCH (a)<-[e:Elenco]-(f)
+WHERE f.nome = "Star Wars"
+RETURN *
+
+
+
+
+
+
+
+
+
+
+

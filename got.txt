@@ -1,0 +1,99 @@
+//Criação de conexões
+MATCH (p1:Personagem),(r:Relação),(p2:Personagem)
+WHERE p1.id_personagem = r.origem
+AND p2.id_personagem =  r.alvo
+MERGE (p1)-[i:Interage {peso: r.peso }]->(p2)
+WITH COUNT(*) AS AFFECTED
+RETURN *
+
+//Consulta das interações
+MATCH (p1) -[i:Interage]->(p2)
+RETURN *
+
+
+//Alterando os nomes 
+MATCH (p:Personagen {nome: 'Jon'})
+SET p.nome = coalesce(p.nome, '') + ' Snow'
+RETURN *
+
+// Adicionando sobrenomes por casa
+MATCH (c:Casa)<-[per:Pertence]-(p:Personagen)
+WHERE c.nome_casa =~ 'Stark'
+SET p.nome = coalesce(p.nome, '') + ' Stark'
+RETURN *
+
+
+//Casa Stark
+CREATE (c:Casa {nome_casa: 'Stark', membros: ['Arya', 'Bran', 'Brandon', 'Rickard Stark', 'Sansa','Robb', 'Ned']})
+
+// Casa Targaryen
+CREATE (c:Casa {nome_casa: 'Targaryen', membros: ['Daenerys', 'Aegon', 'Viserys']})
+
+// Casa Lannister
+CREATE (c:Casa {nome_casa: 'Lannister', membros: ['Cersei', 'Jaime', 'Tyrion', 'Tywin']})
+
+// Casa Greyjoy
+CREATE (c:Casa {nome_casa: 'Greyjoy', membros: ['Balon', 'Theon', 'Yara']})
+
+// Casa Tyrell
+CREATE (c:Casa {nome_casa: 'Tyrell', membros: ['Mace', 'Margaery', 'Loras']})
+
+// Casa Baratheon
+CREATE (c:Casa {nome_casa: 'Baratheon', membros: ['Robert', 'Stannis', 'Renly']})
+
+// Patrulha da Noite
+CREATE (c:Casa {nome_casa: 'Patrulha da Noite', membros: ['Aemon', 'Benjen', 'Grenn', 'Jon Snow', 'Sam', 'Will']})
+
+// Criando arestas
+MATCH (p:Personagen), (c:Casa)
+WHERE p.nome IN c.membros
+MERGE (p)-[:Pertence]->(c)
+
+// Vizualizando
+MATCH (p)-[:Pertence]->(c)
+RETURN *
+
+// Alterando o tipo "peso"
+MATCH ()-[i:Interage]->()
+SET i.peso = toInteger(i.peso)
+
+
+
+
+
+
+
+//Colocando meu personagem em uma casas
+MATCH (c:Casa {nome_casa: 'Lannister'})
+SET c.membros = c.membros + 'Guilherme Lannister'
+
+//Criando arestas para meu personagem
+MATCH (p1:Personagen), (p2:Personagen)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tywin Lannister'
+CREATE (p1)-[i:Interage {peso: 1}]->(p2)
+
+MATCH (p1:Personagen), (p2:Personagen)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Jon Snow'
+CREATE (p1)-[i:Interage {peso:31}]->(p2)
+
+
+
+MATCH (p1)<-[i:Interage]-(p2)
+WHERE p1.nome =~ 'Ned Stark'
+AND p2.nome =~ 'Arya Stark'
+SET i.parentesco = 'Filha'
+
+MATCH (p1)-[i:Interage]->(p2)
+WHERE p1.nome =~ 'Daenerys Targaryen'
+AND p2.nome =~ 'Viserys Targaryen'
+SET i.parentesco = 'Irmão'
+
+MATCH (p1)-[i:Interage]->(p2)
+WHERE p1.nome =~ 'Cersei Lannister'
+AND p2.nome =~ 'Jaime Lannister'
+SET i.parentesco = 'Irmão/Amante'
+
+MATCH (p1)-[i:Interage]->(p2)
+WHERE p1.nome =~ 'Jon Snow'
+AND p2.nome =~ 'Ned Stark'
+SET i.parentesco = 'Filho Bastardo'

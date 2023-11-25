@@ -1,0 +1,54 @@
+// Atividade 05: Banco de Dados Neo4J
+// limpando a base de Elencos
+MATCH (el:Elencos)
+WHERE el.id_filme =~ "tt0.*"   // depois NOT - todos não deleta de uma vez, erro de memória
+DETACH DELETE el
+// tentativa de limpar nós de Elencos - nó que faz o relacionamento
+MATCH (el:Elencos)
+WHERE NOT el.participação IS NULL
+REMOVE el:Elencos
+RETURN el
+
+// Utilizando a base importada do IMDB para filmes, artistas e elencos e a Linguagem CYPHER 
+// responda às seguintes consultas :
+// a)Mostre o nome e o local de nascimento dos artistas que tem Montenegro no nome e não nasceram no Brasil
+MATCH (a:Artista)
+WHERE a.nome =~ '(?i).*montenegro.*'
+AND NOT a.local_nascto =~'(?i).*brazil.*'
+RETURN a.nome AS Nome_Artista, date(a.dt_nascto).year AS Ano_Nascimento, a.local_nascto
+
+// b)Mostre o nome dos artistas que atuaram com o ator Selton Mello em filmes de comédia ou drama
+//  que não são brasileiros
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^selton mello.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND ( f.generos  =~ '(?i).*comedy.*' OR f.generos  =~ '(?i).*drama.*')
+AND NOT a2.local_nascto =~'(?i).*brazil.*'
+RETURN * 
+
+// c)Mostre quem dirigiu a atriz Meryl Streep em filmes de romance. 
+// Mostre o gênero e o título original do filme
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^meryl streep.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*dir.*'
+AND f.generos  =~ '(?i).*romance.*' 
+RETURN * 
+
+// d)Mostre a contagem de filmes de horror por ano de lançamento
+MATCH(f:Filme)
+WHERE f.generos =~ '(?i).*horror.*'
+RETURN f.ano_lançamento AS Ano, COUNT(*) AS Contagem_Ano
+ORDER BY Contagem_Ano DESC
+
+// e)Mostre o nome dos atores e atrizes dos filmes brasileiros de comédia lançados na década de 80:
+//  Título Original – Ano de Lançamento – Ator/Atriz
+MATCH (f)-[e:Elenco]->(a)
+WHERE f.generos =~ '(?i).*comedy.*'
+AND e.tipo_participação =~ '(?i).*act.*'
+AND a.local_nascto =~'(?i).*brazil.*'
+AND f.ano_lançamento >= 1981 AND f.ano_lançamento <= 1990
+RETURN f.titulo_original, f.ano_lançamento, a.nome
+ORDER BY f.ano_lançamento DESC, f.titulo_original
+LIMIT 1000

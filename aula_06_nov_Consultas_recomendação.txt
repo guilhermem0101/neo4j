@@ -1,0 +1,161 @@
+// aula 06/nov - Consultas de Recomendação
+// quem atuou com o Selton Mello, depois Paulo Gustavo
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^selton mello.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+RETURN * 
+
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^paulo gustavo.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+RETURN * 
+
+// recomendações para trabalhar junto com o Paulo Gustavo
+// ainda não trabalharam com ele
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^paulo gustavo.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN *
+
+// quem ainda não trabalhou com o Selton Mello
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^selton mello.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+// RETURN *
+RETURN a2.nome AS Atuou_junto , a3.nome AS Ainda_nao_atuou
+ORDER BY a3.nome, a2.nome
+
+
+
+// aula 06/nov - Consultas de Recomendação
+// quem atuou com o Selton Mello, depois Paulo Gustavo
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^selton mello.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+RETURN * 
+
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^paulo gustavo.*'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+RETURN * 
+
+// recomendações para trabalhar junto com o Paulo Gustavo
+// ainda não trabalharam com ele
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^paulo gustavo.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN *
+
+// quem ainda não trabalhou com o Selton Mello
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^selton mello.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+// RETURN *
+RETURN a2.nome AS Atuou_junto , a3.nome AS Ainda_nao_atuou
+ORDER BY a3.nome, a2.nome
+
+// força do relacionamento
+// recomendações para trabalhar junto com o Paulo Gustavo
+// ainda não trabalharam com ele
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^paulo gustavo.*'
+AND a3.nome =~ '(?i).*porchat.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN *
+// caminho para o Wagner Moura chegar na Fernanda Montenegro
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^wagner moura.*'
+AND  a3.nome =~ '(?i).*fernanda montenegro.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN a2.nome AS Trabalhou_junto, 
+       COUNT(*) AS Força_relacionamento
+ORDER BY Força_relacionamento DESC
+
+// quem dirigiu Robert de Niro
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^robert.*'
+AND a1.nome =~ '(?i).*niro'
+AND a1.nome <> a2.nome
+AND e2.tipo_participação =~ '(?i).*dir.*'
+RETURN *
+//  quem mais dirigiu
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^robert.*'
+AND a1.nome =~ '(?i).*niro'
+AND a1.nome <> a2.nome
+// AND e2.tipo_participação =~ '(?i).*dir.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+RETURN a2.nome AS Diretor, COUNT(*) AS Vezes_atuou
+ORDER BY Vezes_atuou DESC
+// quem dirigiu os parceiros do Robert de Niro
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^robert.*' AND a1.nome =~ '(?i).*niro'
+// AND a3.nome =~ '(?i).*porchat.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*dir.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN *
+
+// caminho do Robert de Niro para Quentin Tarantino
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^robert.*' AND a1.nome =~ '(?i).*niro'
+AND a3.nome =~ '(?i).*tarantino.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*dir.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN *
+
+// Força do caminho do Robert de Niro para Quentin Tarantino
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1.nome =~ '(?i)^robert.*' AND a1.nome =~ '(?i).*niro'
+AND a3.nome =~ '(?i).*tarantino.*'
+AND a1.nome <> a3.nome
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*dir.*'
+// AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN a2.nome AS Trabalhou_junto,
+       COUNT(*) AS Força
+ORDER BY Força DESC
+

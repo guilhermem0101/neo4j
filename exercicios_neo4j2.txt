@@ -1,0 +1,72 @@
+//ex 1a
+MATCH (f:Filme)
+RETURN f.país AS País, max(f.duração) AS MaiorDuração
+ORDER BY MaiorDuração Desc
+
+//ex 1b
+MATCH (f:Filme)
+RETURN f.generos AS Genero, max(f.duração) AS MaiorDuração
+ORDER BY MaiorDuração Desc
+
+// ex 1c
+MATCH (f:Filme)
+WITH f.país AS País, f.generos AS Genero, collect(f) AS Films
+RETURN País, Genero, max([film in Films | film.duração]) AS MaiorDuração
+ORDER BY MaiorDuração DESC
+
+//ex 2a
+MATCH (a:Artista)
+WHERE a.altura IS NOT NULL
+RETURN avg(a.altura) AS Média, substring(a.dt_nascto, 0, 4) AS AnoNascimento
+ORDER BY Média DESC
+
+// ex 2b
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.dt_obito IS NOT NULL
+AND a.dt_nascto =~ '\\d{4}-\\d{2}-\\d{2}'
+AND a.dt_obito =~ '\\d{4}-\\d{2}-\\d{2}'
+RETURN avg(duration.between(date(a.dt_nascto), date(a.dt_obito)).years) AS Idade, a.local_nascto AS Local
+ORDER BY Idade DESC
+
+// ex 3 
+MATCH (f)-[e:Elenco]->(a)
+WHERE e.tipo_participação =~ '(?i).*direc.*'
+RETURN a.nome, count(e) AS Quantidade
+ORDER BY Quantidade DESC
+
+
+// ex 4
+MATCH (f)-[e:Elenco]->(a)
+WHERE e.tipo_participação =~ '(?i).*act.*'
+AND f.generos =~ '(?i).*Comedy.*'
+AND a.local_nascto =~ '(?i).*brazil.*'
+RETURN a.nome AS Nome, count(e) AS Quantidade
+ORDER BY Quantidade DESC
+
+//ex 5 
+MATCH (f)-[e:Elenco]->(a)
+WHERE NOT e.tipo_participação =~ '(?i).*act.*'
+AND NOT e.tipo_participação =~ '(?i).*dir.*' 
+RETURN f.país AS País, count(e) AS Quantidade
+ORDER BY Quantidade DESC
+
+// ex 6
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^fernanda.*'
+AND a1.nome =~ '(?i).*montenegro'
+AND NOT f.generos =~ '(?i).*Drama.*'
+AND NOT f.generos =~ '(?i).Romance.*'   
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND a1.nome <> a2.nome
+RETURN DISTINCT a2.nome AS Nome
+
+//ex 8
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^ renato.*'
+AND a1.nome =~ '(?i).*aragão '
+AND f.generos =~ '(?i).*Comedy.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND f.país =~ '(?i).*brazil.*' 
+AND a1.nome <> a2.nome
+RETURN DISTINCT a2.nome

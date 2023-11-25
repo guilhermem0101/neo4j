@@ -1,0 +1,39 @@
+//Exercicio A
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND NOT a.local_nascto  =~ '(?i).*brazil.*'
+AND a.nome =~ '(?i).*Montenegro'
+RETURN a.nome AS Nome, a.local_nascto AS LocalNascimento
+
+//Exercicio B
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^selton.*'
+AND a1.nome =~ '(?i).*mello'
+AND f.generos =~ '(?i).*Comedy.*|.*Drama.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND NOT f.país =~ '(?i).*brazil.*' 
+AND a1.nome <> a2.nome
+RETURN DISTINCT a2.nome
+
+// Exercicio C
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE a1.nome =~ '(?i)^meryl.*'
+AND a1.nome =~ '(?i).*streep'
+AND e2.tipo_participação =~ '(?i).*direc.*' 
+AND a1.nome <> a2.nome
+RETURN f.generos AS Genero, f.titulo AS Titulo
+
+// Exercicio D
+MATCH (f:Filme)
+WHERE f.generos =~ '(?i).*horror.*'
+RETURN f.ano_lançamento AS AnoLançamento, COUNT(*) AS Quantidade
+ORDER BY AnoLançamento
+
+// Exercicio E
+MATCH (f)-[e:Elenco]->(a)
+WHERE f.generos =~ '(?i).*Comedy.*'
+AND f.país =~ '(?i).*brazil.*'
+AND f.ano_lançamento >= 1980
+AND f.ano_lançamento <= 1989
+AND e.tipo_participação =~ '(?i).*act.*'
+RETURN f.titulo_original AS TítuloOriginal, f.ano_lançamento AS AnoLançamento, COLLECT(a.nome) AS AtoresAtrizes

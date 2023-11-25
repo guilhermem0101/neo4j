@@ -1,0 +1,106 @@
+//BD Cinema - Aula 30/outubro
+//Trabalhando com datas
+// data atual
+RETURN date() AS data_atual, datetime() AS datahora_atual
+// data hora
+RETURN datetime({timezone: 'Greenwich'}) AS datahora_atual
+RETURN datetime({timezone: "America/Sao_Paulo"}) AS datahora_atual
+// extract da data hora
+RETURN datetime({timezone: "America/Sao_Paulo"}).hour AS hora_atual
+RETURN datetime({timezone: "America/Sao_Paulo"}).week AS semana_atual
+RETURN datetime({timezone: "America/Sao_Paulo"}).month AS mes_atual
+
+// somando 2 horas à data atual
+RETURN datetime({timezone: "America/Sao_Paulo"}) + duration({hours:2}) + duration({minutes:30})
+
+UNWIND [
+  date('2023-10-30'),
+  date('2023-10'), // completa com dia 01
+  date('202310'),   // completa com dia 01
+  date('2023-W43-1'), // retorna semana 43, 1o dia
+  date('2023300'), // retorna dia 300
+  date('2023') // completa com 01-01
+] as Formatos_Data
+RETURN Formatos_Data
+
+UNWIND [
+  duration.between(date("1984-10-11"), date("1985-11-25")),
+  duration.between(date("1985-11-25"), date("1984-10-11")),
+  duration.between(date("1984-10-11"), datetime("1984-10-12T21:40:32.142+0100")),
+  duration.between(date("2015-06-24"), localtime("14:30")),
+  duration.between(localtime("14:30"), time("16:30+0100")),
+  duration.between(localdatetime("2015-07-21T21:40:32.142"), localdatetime("2016-07-21T21:45:22.142")),
+  duration.between(datetime({year: 2017, month: 10, day: 29, hour: 0, timezone: 'Europe/Stockholm'}), datetime({year: 2017, month: 10, day: 29, hour: 0, timezone: 'Europe/London'}))
+] AS aDuration
+RETURN aDuration
+
+//cálculo da idade - idade dos atores
+// levar em consideração que data de nascto e óbito estão como strings,
+// precisa converter na consulta  - EM ANOS
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.dt_obito IS NOT NULL
+AND a.local_nascto =~ '(?i).*brazil.*'
+AND a.dt_nascto =~ '.*-.*'
+AND a.dt_obito =~ '.*-.*'
+RETURN a.nome, a.dt_nascto, a.dt_obito,
+duration.between( date(a.dt_nascto), date(a.dt_obito)).years AS Idade
+
+// EM anos, meses e dias
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.dt_obito IS NOT NULL
+AND a.local_nascto =~ '(?i).*brazil.*'
+AND a.dt_nascto =~ '.*-.*'
+AND a.dt_obito =~ '.*-.*'
+RETURN a.nome, a.dt_nascto, a.dt_obito,
+duration.inDays( date(a.dt_nascto), date(a.dt_obito)) AS Idade
+ORDER BY Idade DESC
+
+// mostrando a idade para ambos os casos : quem tá vivo em que não tá mais
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.local_nascto =~ '(?i).*brazil.*'
+AND a.dt_nascto =~ '.*-.*'
+RETURN a.nome, a.dt_nascto, a.dt_obito,
+CASE 
+     WHEN a.dt_obito IS NOT NULL AND a.dt_obito =~ '.*-.*' THEN  // óbito
+	   duration.between( date(a.dt_nascto), date(a.dt_obito)).years
+	 WHEN a.dt_obito IS NULL THEN //vivo
+	   duration.between( date(a.dt_nascto), date()).years
+END as Idade
+ORDER BY Idade DESC
+
+//****** CASE
+// CASE exemplo simples
+MATCH (f:Filme)
+WHERE f.titulo IS NOT NULL
+RETURN f.titulo As Nome_Filme,
+CASE
+  WHEN f.país = "USA"  THEN 'Norte Americano'
+  WHEN f.país IS NULL  THEN 'Desconhecido'
+  ELSE f.país
+END AS Nacionalidade
+
+// considerando data de óbito e data atual
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.local_nascto =~ '(?i).*brazil.*'
+AND a.dt_nascto =~ '.*-.*'
+RETURN a.nome, a.dt_nascto, a.dt_obito,
+CASE
+   WHEN a.dt_obito IS NULL THEN
+        duration.between(date(a.dt_nascto),date()).years
+   WHEN a.dt_obito IS NOT NULL AND a.dt_obito =~ '.*-.*' THEN
+        duration.between(date(a.dt_nascto),date(a.dt_obito)).years
+   END as Idade
+ORDER BY Idade DESC
+
+// tentativa com apoc - sem sucesso
+datetime({epochMillis:apoc.date.parse('a.dt_nascto','ms', 'dd/MM/yyyy')})
+
+// convertendo altura para inteiro
+MATCH(a:Artista)
+WHERE a.altura IS NOT NULL
+SET a.altura = toInteger(a.altura)
+

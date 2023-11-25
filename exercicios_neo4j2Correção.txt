@@ -1,0 +1,726 @@
+// Atividade 6 - Banco de Dados NO-SQL – Neo4J – Fatec IPIRANGA
+// Utilizando a base importada do IMDB :
+// limpando a base
+MATCH (el:Elencos)
+WHERE el.id_filme =~ "tt0.*"   // depois NOT - todos não deleta de uma vez, erro de memória
+DETACH DELETE el
+
+// transformando os ids para números, são strings
+MATCH (a:Artista)
+SET a.altura = toInteger(a.altura)
+RETURN a
+// tratando filme
+MATCH (f:Filme)
+SET f.ano_lançamento = toInteger(f.ano_lançamento), 
+f.duração = toInteger(f.duração)
+RETURN f
+
+
+// 1) Mostre a maior duração de filme :
+// a) por país
+
+MATCH(f:Filme)
+WHERE f.país IS NOT NULL
+RETURN f.país, MAX(f.duração) AS Maior
+ORDER BY Maior DESC
+
+╒══════════════════════════════════════════════════════════════════════╤═════╕
+│f.país                                                                │Maior│
+╞══════════════════════════════════════════════════════════════════════╪═════╡
+│"Argentina"                                                           │808  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"France"                                                              │729  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Soviet Union"                                                        │580  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Russia"                                                              │570  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Philippines"                                                         │540  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Philippines, Netherlands, Sweden"                                    │540  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Philippines, Netherlands"                                            │540  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Philippines, Singapore"                                              │485  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"West Germany, France, UK"                                            │442  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Hungary, Germany, Switzerland"                                       │439  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"France, Portugal, West Germany, Switzerland"                         │410  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"USA"                                                                 │398  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Germany, Ukraine, UK, Russia"                                        │369  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Italy"                                                               │366  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"UK"                                                                  │357  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"France, Italy, West Germany, Canada, UK"                             │335  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Russia, France, Germany, Sweden, Netherlands, Ukraine"               │330  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Bulgaria"                                                            │323  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"India"                                                               │321  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Japan"                                                               │317  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Italy, France, West Germany"                                         │317  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Philippines, USA"                                                    │315  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+│"Hungary"                                                             │301  │
+├──────────────────────────────────────────────────────────────────────┼─────┤
+
+//b) por gênero
+
+MATCH(f:Filme)
+WHERE f.generos IS NOT NULL
+RETURN f.generos, MAX(f.duração) AS Maior
+ORDER BY Maior DESC
+
+// se fosse vetor "Drama", "Fantasy", "Musical"
+
+╒═════════════════════════════════╤═════╕
+│f.generos                        │Maior│
+╞═════════════════════════════════╪═════╡
+│"Drama, Fantasy, Musical"        │808  │
+├─────────────────────────────────┼─────┤
+│"Drama, Mystery"                 │729  │
+├─────────────────────────────────┼─────┤
+│"Drama, History, Romance"        │580  │
+├─────────────────────────────────┼─────┤
+│"Fantasy"                        │570  │
+├─────────────────────────────────┼─────┤
+│"Drama"                          │540  │
+├─────────────────────────────────┼─────┤
+│"Crime, Drama"                   │540  │
+├─────────────────────────────────┼─────┤
+│"Adventure, Drama, Fantasy"      │485  │
+├─────────────────────────────────┼─────┤
+│"Biography, Drama"               │442  │
+├─────────────────────────────────┼─────┤
+│"Action, Adventure, Crime"       │421  │
+├─────────────────────────────────┼─────┤
+│"Adventure, Mystery"             │418  │
+├─────────────────────────────────┼─────┤
+│"Drama, Fantasy, Horror"         │398  │
+├─────────────────────────────────┼─────┤
+│"Drama, Horror, Thriller"        │369  │
+├─────────────────────────────────┼─────┤
+│"Drama, Romance"                 │366  │
+├─────────────────────────────────┼─────┤
+│"Action, Fantasy, Horror"        │354  │
+├─────────────────────────────────┼─────┤
+│"Drama, History, War"            │345  │
+├─────────────────────────────────┼─────┤
+│"Drama, History, Thriller"       │335  │
+├─────────────────────────────────┼─────┤
+│"Biography, Drama, History"      │330  │
+├─────────────────────────────────┼─────┤
+│"Drama, War"                     │330  │
+├─────────────────────────────────┼─────┤
+│"Adventure, History, Romance"    │328  │
+├─────────────────────────────────┼─────┤
+│"Action, Crime, Drama"           │321  │
+├─────────────────────────────────┼─────┤
+│"Drama, History"                 │317  │
+├─────────────────────────────────┼─────┤
+│"Adventure, History"             │311  │
+├─────────────────────────────────┼─────┤
+│"Action, Adventure, Drama"       │306  │
+├─────────────────────────────────┼─────┤
+│"Adventure, Crime, Sci-Fi"       │303  │
+├─────────────────────────────────┼─────┤
+│"Action, Mystery, Crime"         │302  │
+├─────────────────────────────────┼─────┤
+│"Adventure"                      │301  │
+├─────────────────────────────────┼─────┤
+
+
+//c) por país e gênero
+MATCH(f:Filme)
+WHERE f.país IS NOT NULL
+AND f.generos IS NOT NULL
+RETURN f.país, f.generos, MAX(f.duração) AS Maior
+ORDER BY Maior DESC
+
+╒══════════════════════════════════════════════════════════════════════╤══════════════════════════════╤═════╕
+│f.país                                                                │f.generos                     │Maior│
+╞══════════════════════════════════════════════════════════════════════╪══════════════════════════════╪═════╡
+│"Argentina"                                                           │"Drama, Fantasy, Musical"     │808  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France"                                                              │"Drama, Mystery"              │729  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Soviet Union"                                                        │"Drama, History, Romance"     │580  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Russia"                                                              │"Fantasy"                     │570  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Philippines, Netherlands"                                            │"Drama"                       │540  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Philippines"                                                         │"Drama"                       │540  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Philippines, Netherlands, Sweden"                                    │"Crime, Drama"                │540  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Philippines, Singapore"                                              │"Adventure, Drama, Fantasy"   │485  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"West Germany, France, UK"                                            │"Biography, Drama"            │442  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Hungary, Germany, Switzerland"                                       │"Drama"                       │439  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France"                                                              │"Action, Adventure, Crime"    │421  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France"                                                              │"Drama"                       │418  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France"                                                              │"Adventure, Mystery"          │418  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France, Portugal, West Germany, Switzerland"                         │"Drama"                       │410  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"USA"                                                                 │"Drama, Fantasy, Horror"      │398  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Germany, Ukraine, UK, Russia"                                        │"Drama, Horror, Thriller"     │369  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Italy"                                                               │"Drama, Romance"              │366  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"UK"                                                                  │"Drama, Romance"              │357  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"USA"                                                                 │"Action, Fantasy, Horror"     │354  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France"                                                              │"Drama, History, War"         │345  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"France, Italy, West Germany, Canada, UK"                             │"Drama, History, Thriller"    │335  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Soviet Union"                                                        │"Drama, War"                  │330  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"Russia, France, Germany, Sweden, Netherlands, Ukraine"               │"Biography, Drama, History"   │330  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+│"USA"                                                                 │"Adventure, History, Romance" │328  │
+├──────────────────────────────────────────────────────────────────────┼──────────────────────────────┼─────┤
+
+//2) Mostre para os Artistas
+// tratamento
+// maior que 274cm
+MATCH (a:Artista)
+WHERE a.altura > 274
+SET a.altura = null
+RETURN a
+// igual a 20cm - 21 artistas
+MATCH (a:Artista)
+WHERE a.altura = 20
+SET a.altura = null
+RETURN a
+
+//a) Média da altura por ano de nascimento
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.altura IS NOT NULL
+AND a.dt_nascto =~ '.*-.*'
+AND NOT a.dt_nascto =~ '.*,.*'
+AND size(a.dt_nascto) = 10
+RETURN date(a.dt_nascto).year AS Ano, 
+ROUND(AVG(a.altura),1) As Media_altura,
+COUNT(a.altura) AS Contagem
+// ORDER BY Media_altura DESC
+ORDER BY Ano DESC
+
+'12 AC'
+'1950'
+'Rio de Janeiro IN 1950'
+'yyyy-mm-dd'
+
+╒════╤════════════╤════════╕
+│Ano │Media_altura│Contagem│
+╞════╪════════════╪════════╡
+│2011│118.0       │1       │
+├────┼────────────┼────────┤
+│2010│124.0       │1       │
+├────┼────────────┼────────┤
+│2009│134.5       │2       │
+├────┼────────────┼────────┤
+│2007│162.8       │4       │
+├────┼────────────┼────────┤
+│2006│146.4       │5       │
+├────┼────────────┼────────┤
+│2005│159.0       │9       │
+├────┼────────────┼────────┤
+│2004│158.2       │16      │
+├────┼────────────┼────────┤
+│2003│169.2       │25      │
+├────┼────────────┼────────┤
+│2002│161.3       │21      │
+├────┼────────────┼────────┤
+│2001│163.3       │32      │
+├────┼────────────┼────────┤
+│2000│165.7       │51      │
+├────┼────────────┼────────┤
+│1999│167.7       │53      │
+├────┼────────────┼────────┤
+│1998│165.8       │94      │
+├────┼────────────┼────────┤
+│1997│167.9       │108     │
+├────┼────────────┼────────┤
+│1996│169.1       │140     │
+├────┼────────────┼────────┤
+│1995│170.8       │148     │
+├────┼────────────┼────────┤
+│1994│169.0       │164     │
+├────┼────────────┼────────┤
+│1993│170.1       │206     │
+├────┼────────────┼────────┤
+│1992│171.0       │282     │
+├────┼────────────┼────────┤
+│1991│171.2       │292     │
+├────┼────────────┼────────┤
+│1990│171.4       │385     │
+├────┼────────────┼────────┤
+│1989│171.3       │403     │
+├────┼────────────┼────────┤
+│1988│172.2       │465     │
+├────┼────────────┼────────┤
+│1987│173.7       │512     │
+├────┼────────────┼────────┤
+│1986│172.6       │618     │
+├────┼────────────┼────────┤
+│1985│172.5       │642     │
+├────┼────────────┼────────┤
+│1984│172.8       │662     │
+
+// equivalente ao having, usando with e filtrando media NOT NULL
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.altura IS NOT NULL
+AND a.dt_nascto =~ '.*-.*'
+AND NOT a.dt_nascto =~ '.*,.*'
+AND size(a.dt_nascto) = 10
+WITH date(a.dt_nascto).year AS Ano, 
+ROUND(AVG(a.altura),1) As Media_altura,
+COUNT(a.altura) As Qtos
+WHERE Media_altura IS NOT NULL AND Qtos > 10
+RETURN Ano, Media_altura, Qtos
+ORDER BY Media_altura DESC
+
+╒════╤════════════╤════╕
+│Ano │Media_altura│Qtos│
+╞════╪════════════╪════╡
+│1902│182.8       │91  │
+├────┼────────────┼────┤
+│1957│179.0       │368 │
+├────┼────────────┼────┤
+│1874│178.7       │27  │
+├────┼────────────┼────┤
+│1871│178.5       │13  │
+├────┼────────────┼────┤
+│1882│178.4       │32  │
+├────┼────────────┼────┤
+│1880│178.1       │33  │
+├────┼────────────┼────┤
+│1878│177.9       │28  │
+├────┼────────────┼────┤
+│1969│177.7       │615 │
+├────┼────────────┼────┤
+│1954│177.6       │280 │
+├────┼────────────┼────┤
+│1959│177.6       │375 │
+
+//b)Média de idade por local de nascimento
+MATCH (a:Artista)
+WHERE a.dt_nascto IS NOT NULL
+AND a.local_nascto IS NOT NULL
+AND a.dt_nascto =~ '.*-.*'
+AND NOT a.dt_nascto =~ '.*,.*' 
+AND size(a.dt_nascto) = 10
+WITH a.local_nascto As local, 
+CASE
+   WHEN a.dt_obito IS NULL THEN
+        duration.between(date(a.dt_nascto),date()).years
+   WHEN a.dt_obito IS NOT NULL AND a.dt_obito =~ '.*-.*' AND size(a.dt_obito) = 10 THEN
+        duration.between(date(a.dt_nascto),date(a.dt_obito)).years
+   END as Idade
+WHERE Idade IS NOT NULL
+WITH local AS localização, ROUND(AVG(Idade),1) AS Media, 
+COUNT(*) AS Contagem
+WHERE Contagem > 5  // equivale ao HAVING
+RETURN localização, Media,Contagem
+ORDER BY Media DESC
+
+╒══════════════════════════════════════════════════════════════════════╤═════╤════════╕
+│localização                                                           │Media│Contagem│
+╞══════════════════════════════════════════════════════════════════════╪═════╪════════╡
+│"L'Aigle, Orne, France"                                               │173.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Fünfkirchen, Austrian Empire [now Hungary]"                          │163.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Aachen, Germany"                                                     │153.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Castellana, Italy"                                                   │148.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Nashville, Michigan, USA"                                            │148.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Fourmies, Nord, France"                                              │148.0│1       │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Bielitz, Silesia, Austria-Hungary [now Bielsko-Biala, Slaskie, Poland│147.0│1       │
+│]"                                                                    │     │        │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+
+// filtrando a contagem para mais que 10
+
+╒══════════════════════════════════════════════════════════════════════╤═════╤════════╕
+│localização                                                           │Media│Contagem│
+╞══════════════════════════════════════════════════════════════════════╪═════╪════════╡
+│"Mannheim, Germany"                                                   │83.5 │13      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Newcastle-upon-Tyne, England, UK"                                    │82.4 │14      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Edmonton, London, England, UK"                                       │81.9 │14      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Paris, Île-de-France, France"                                        │81.2 │14      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Moscow, RSFSR [now Russia]"                                          │81.2 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"British India"                                                       │81.1 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Free City of Danzig [now Gdansk, Pomorskie, Poland]"                 │79.9 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Lódz, Poland, Russian Empire [now Lódz, Lódzkie, Poland]"            │79.9 │15      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Dresden, Saxony, Germany"                                            │79.8 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Hull, Yorkshire, England, UK"                                        │79.7 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Asakusa, Tokyo, Japan"                                               │79.7 │12      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Montpellier, Hérault, France"                                        │79.4 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Wilno, Wilenskie, Poland [now Vilnius, Lithuania]"                   │79.3 │15      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Kaunas, Lithuania"                                                   │79.1 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Parma, Emilia-Romagna, Italy"                                        │79.1 │16      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Tunis, French Protectorate of Tunisia [now Tunisia]"                 │78.7 │12      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Lahore, Punjab, British India [now Pakistan]"                        │77.9 │11      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Trieste, Italy"                                                      │77.8 │13      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+│"Prague, Protektorát Cechy a Morava [now Czech Republic]"             │77.8 │17      │
+├──────────────────────────────────────────────────────────────────────┼─────┼────────┤
+
+
+// verificando da maior idade
+MATCH (a:Artista)
+WHERE a.local_nascto = "L'Aigle, Orne, France"
+RETURN a //não tem data de obito
+
+//3- Mostre a quantidade de filmes dirigidos por cada diretor
+MATCH (x)-[y:Elenco]->(z)
+WHERE y.tipo_participação =~ '(?i).*direct.*'
+RETURN z.nome, COUNT(*) AS Qtos_filmes
+ORDER BY Qtos_filmes DESC
+
+╒═══════════════════════════════╤═══════════╕
+│a.nome                         │Qtos_filmes│
+╞═══════════════════════════════╪═══════════╡
+│"Michael Curtiz"               │99         │
+├───────────────────────────────┼───────────┤
+│"Jesús Franco"                 │91         │
+├───────────────────────────────┼───────────┤
+│"Richard Thorpe"               │80         │
+├───────────────────────────────┼───────────┤
+│"Lloyd Bacon"                  │78         │
+├───────────────────────────────┼───────────┤
+│"Lesley Selander"              │78         │
+├───────────────────────────────┼───────────┤
+│"William Beaudine"             │75         │
+├───────────────────────────────┼───────────┤
+│"John Ford"                    │73         │
+├───────────────────────────────┼───────────┤
+│"Raoul Walsh"                  │71         │
+├───────────────────────────────┼───────────┤
+│"Jing Wong"                    │70         │
+├───────────────────────────────┼───────────┤
+│"Gordon Douglas"               │69         │
+├───────────────────────────────┼───────────┤
+│"Cheh Chang"                   │67         │
+├───────────────────────────────┼───────────┤
+│"Mervyn LeRoy"                 │66         │
+├───────────────────────────────┼───────────┤
+│"Norman Taurog"                │61         │
+├───────────────────────────────┼───────────┤
+│"William A. Wellman"           │60         │
+├───────────────────────────────┼───────────┤
+│"Alfred E. Green"              │59         │
+├───────────────────────────────┼───────────┤
+│"George Marshall"              │58         │
+├───────────────────────────────┼───────────┤
+│"Giannis Dalianidis"           │58         │
+├───────────────────────────────┼───────────┤
+│"Priyadarshan"                 │58         │
+├───────────────────────────────┼───────────┤
+│"William A. Seiter"            │57         │
+├───────────────────────────────┼───────────┤
+│"George Cukor"                 │57         │
+├───────────────────────────────┼───────────┤
+│"Joseph Kane"                  │57         │
+├───────────────────────────────┼───────────┤
+│"William Witney"               │56         │
+├───────────────────────────────┼───────────┤
+│"Takashi Miike"                │56         │
+├───────────────────────────────┼───────────┤
+│"Claude Chabrol"               │55         │
+├───────────────────────────────┼───────────┤
+│"Alfred Hitchcock"             │55         │
+├───────────────────────────────┼───────────┤
+
+
+//4)Mostre a quantidade de filmes de comédia realizados para cada ator/atriz brasileiro.
+
+MATCH (f)-[e:Elenco]->(a)
+WHERE e.tipo_participação =~ '(?i).*act.*'
+AND a.local_nascto =~ '(?i).*brazil.*'
+AND f.generos =~ '(?i).*comedy.*'
+WITH a.nome AS Artista, COUNT(*) AS Qtos_filmes
+RETURN Artista, Qtos_filmes
+ORDER BY Qtos_filmes DESC
+LIMIT 500
+
+╒═══════════════════════════╤═══════════╕
+│Artista                    │Qtos_filmes│
+╞═══════════════════════════╪═══════════╡
+│"Renato Aragão"            │31         │
+├───────────────────────────┼───────────┤
+│"Dedé Santana"             │12         │
+├───────────────────────────┼───────────┤
+│"Mussum"                   │11         │
+├───────────────────────────┼───────────┤
+│"Selton Mello"             │11         │
+├───────────────────────────┼───────────┤
+│"Otávio Augusto"           │9          │
+├───────────────────────────┼───────────┤
+│"Zacarias"                 │8          │
+├───────────────────────────┼───────────┤
+│"Andrea Beltrão"           │8          │
+├───────────────────────────┼───────────┤
+│"Antônio Fagundes"         │8          │
+├───────────────────────────┼───────────┤
+│"Leandro Hassum"           │8          │
+├───────────────────────────┼───────────┤
+│"Marília Pêra"             │8          │
+├───────────────────────────┼───────────┤
+│"Ingrid Guimarães"         │8          │
+├───────────────────────────┼───────────┤
+│"Fábio Porchat"            │7          │
+├───────────────────────────┼───────────┤
+│"Bruno Garcia"             │7          │
+├───────────────────────────┼───────────┤
+│"Lázaro Ramos"             │7          │
+├───────────────────────────┼───────────┤
+│"Mariana Ximenes"          │7          │
+├───────────────────────────┼───────────┤
+
+//5)Mostre a contagem para cada tipo de participação que seja diferente de ator,atriz,diretor, por estúdio do Filme
+
+MATCH (f)-[e:Elenco]->(a)
+WHERE NOT e.tipo_participação =~ '(?i).*act.*'
+AND NOT e.tipo_participação =~ '(?i).*direct.*'
+RETURN e.tipo_participação, COUNT(*) AS Contagem
+ORDER BY Contagem DESC
+
+╒═════════════════════╤════════╕
+│e.tipo_participação  │Contagem│
+╞═════════════════════╪════════╡
+│"writer"             │122791  │
+├─────────────────────┼────────┤
+│"producer"           │101088  │
+├─────────────────────┼────────┤
+│"composer"           │66859   │
+├─────────────────────┼────────┤
+│"cinematographer"    │55422   │
+├─────────────────────┼────────┤
+│"editor"             │33780   │
+├─────────────────────┼────────┤
+│"production_designer"│9485    │
+├─────────────────────┼────────┤
+│"self"               │909     │
+├─────────────────────┼────────┤
+│"archive_footage"    │444     │
+├─────────────────────┼────────┤
+│"archive_sound"      │7       │
+└─────────────────────┴────────┘
+
+//6) Mostre o nome dos atores que trabalharam diretamente com a atriz Fernanda Montenegro em filmes diferentes de drama e romance
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE e2.tipo_participação =~ '(?i).*act.*'
+AND e1.tipo_participação =~ '(?i).*act.*'
+AND a1.nome =~ '(?i).*fernanda montenegro.*'
+AND ( NOT f.generos =~ '(?i).*drama.*'
+      AND NOT f.generos =~ '(?i).*roman.*' )
+RETURN a2.nome AS Trabalhou_junto, f.titulo, f.generos
+ORDER BY a2.nome
+╒════════════════╤══════════╤═════════╕
+│a2.nome         │f.titulo  │f.generos│
+╞════════════════╪══════════╪═════════╡
+│"Maria Sílvia"  │"Tudo Bem"│"Comedy" │
+├────────────────┼──────────┼─────────┤
+│"Paulo Gracindo"│"Tudo Bem"│"Comedy" │
+├────────────────┼──────────┼─────────┤
+│"Zezé Motta"    │"Tudo Bem"│"Comedy" │
+└────────────────┴──────────┴─────────┘
+
+
+//7)	Repita a consulta 1) acima para os que não trabalharam diretamente com ela, com maior força para fazer contato
+//***** segundo grau
+//** apareceu Luiz Fernando Guimarães com maior Força : 8, ou seja, tem 8 relacionamento que permitem chegar neste ator
+//MATCH (a1:Artista)<-[e1:Elenco]-(f1:Filme)-[e2:Elenco]->(a2:Artista),
+//(a2:Artista)<-[e3:Elenco]-(f2:Filme)-[e4:Elenco]->(a3:Artista)
+
+MATCH (a1)<-[e1:Elenco]-(f1)-[e2:Elenco]->(a2),
+(a2)<-[e3:Elenco]-(f2)-[e4:Elenco]->(a3)
+WHERE a1 <> a3 AND a2 <> a3 AND f1 <> f2
+AND a1.nome =~ '(?i).*fernanda montenegro.*'
+AND a3.nome =~ '(?i).*luiz fernando.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+//RETURN *
+//RETURN a2.nome AS Trabalhou_Junto, f2.titulo AS Filme_Amigo,
+RETURN a2.nome AS Amigo, a3.nome AS Amigo_do_Amigo,
+COUNT(a3.nome) AS Qtde_Arestas
+ORDER BY Qtde_Arestas DESC
+//RETURN *
+
+//RETURN a3.nome, a2.nome, f2.titulo, f1.titulo 
+//ORDER BY a3.nome, a2.nome, f2.titulo, f1.titulo   **** aqui mostra quem são esses relacionamentos
+╒═══════════════════════════╤════════════╕
+│Outro                      │Qtde_Arestas│
+╞═══════════════════════════╪════════════╡
+│"Luiz Fernando Guimarães"  │8           │
+├───────────────────────────┼────────────┤
+│"Selton Mello"             │7           │
+├───────────────────────────┼────────────┤
+│"Júlio Andrade"            │6           │
+├───────────────────────────┼────────────┤
+│"Dira Paes"                │5           │
+├───────────────────────────┼────────────┤
+│"Rodrigo Santoro"          │5           │
+├───────────────────────────┼────────────┤
+│"Wagner Moura"             │5           │
+├───────────────────────────┼────────────┤
+
+// Quem leva até Luis Fernando
+MATCH (a1:Artista)<-[e1:Elenco]-(f1:Filme)-[e2:Elenco]->(a2:Artista)<-[e3:Elenco]-(f2:Filme)-[e4:Elenco]->(a3:Artista)
+WHERE a1 <> a3
+AND a1.nome =~ '(?i).*fernanda montenegro.*'
+AND a3.nome =~ '(?i).*luiz Fernando.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*act.*'
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN a2.nome AS Parceiro,a3.nome AS Outro, COUNT(a3.nome) AS Força
+ORDER BY a3.nome, Força DESC
+
+╒══════════════════╤═════════════════════════╤═════╕
+│Parceiro          │Outro                    │Força│
+╞══════════════════╪═════════════════════════╪═════╡
+│"Fernanda Torres" │"Luiz Fernando Guimarães"│6    │
+├──────────────────┼─────────────────────────┼─────┤
+│"Evandro Mesquita"│"Luiz Fernando Guimarães"│1    │
+├──────────────────┼─────────────────────────┼─────┤
+│"Pedro Cardoso"   │"Luiz Fernando Guimarães"│1    │
+└──────────────────┴─────────────────────────┴─────┘
+
+//8)	Mostre todos os artistas de filmes de comédia 
+// que não trabalharam com Renato Aragão (ator/atriz/diretor,etc.).
+MATCH (a1:Artista)<-[e1:Elenco]-(f1:Filme)-[e2:Elenco]->(a2:Artista),
+(a2:Artista)<-[e3:Elenco]-(f2:Filme)-[e4:Elenco]->(a3:Artista)
+WHERE a1 <> a3 AND a2 <> a3 AND f1 <> f2
+AND a1.nome =~ '(?i).*renato.*' 
+AND a1.nome =~ '(?i).*arag.*' 
+AND f1.generos =~ '(?i).*comed.*' 
+AND f2.generos =~ '(?i).*comed.*'
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+//RETURN *
+RETURN a3.nome, COUNT(a3.nome) AS Força  
+ORDER BY Força DESC
+╒═══════════════════════════╤═════╕
+│a3.nome                    │Força│
+╞═══════════════════════════╪═════╡
+│"Roberto Santucci"         │29   │
+├───────────────────────────┼─────┤
+│"Paloma Duarte"            │25   │
+├───────────────────────────┼─────┤
+│"Leandro Hassum"           │22   │
+├───────────────────────────┼─────┤
+│"Hugo Carvana"             │20   │
+├───────────────────────────┼─────┤
+│"Adriana Falcão"           │19   │
+├───────────────────────────┼─────┤
+│"Marcio Garcia"            │19   │
+├───────────────────────────┼─────┤
+│"Danielle Winits"          │19   │
+├───────────────────────────┼─────┤
+│"Marcelo Saback"           │19   │
+├───────────────────────────┼─────┤
+│"Ingrid Guimarães"         │19   │
+├───────────────────────────┼─────┤
+│"Maria Carmem Barbosa"     │18   │
+├───────────────────────────┼────
+
+// 9)	Mostre os atores/atrizes com idade superior a 40 anos 
+// que mais trabalharam em filmes de Romance com a atriz Julia Roberts.
+
+MATCH (a1)<-[e1:Elenco]-(f)-[e2:Elenco]->(a2)
+WHERE e2.tipo_participação =~ '(?i).*act.*'
+AND a1.nome =~ '(?i).*julia roberts.*'
+AND f.generos =~ '(?i).*romance.*'
+AND a2.dt_nascto IS NOT NULL
+AND a2.dt_nascto =~ '.*-.*'
+AND NOT a2.dt_nascto =~ '.*,.*' 
+AND size(a2.dt_nascto) = 10
+WITH a2.nome AS Trabalhou, 
+CASE
+   WHEN a2.dt_obito IS NULL THEN
+        duration.between(date(a2.dt_nascto),date()).years
+   WHEN a2.dt_obito IS NOT NULL AND a2.dt_obito =~ '.*-.*' AND size(a2.dt_obito) = 10 THEN
+        duration.between(date(a2.dt_nascto),date(a2.dt_obito)).years
+   END as IdadeTrabalhou
+WHERE IdadeTrabalhou IS NOT NULL AND IdadeTrabalhou > 40
+RETURN Trabalhou, IdadeTrabalhou, COUNT(*) AS Vezes
+ORDER BY Vezes DESC
+
+╒══════════════════════╤══════════════╤═════╕
+│Trabalhou             │IdadeTrabalhou│Vezes│
+╞══════════════════════╪══════════════╪═════╡
+│"Clive Owen"          │59            │2    │
+├──────────────────────┼──────────────┼─────┤
+│"Richard Gere"        │74            │2    │
+├──────────────────────┼──────────────┼─────┤
+│"Vincent D'Onofrio"   │64            │2    │
+├──────────────────────┼──────────────┼─────┤
+│"Jason Sudeikis"      │48            │1    │
+├──────────────────────┼──────────────┼─────┤
+│"Kate Hudson"         │44            │1    │
+├──────────────────────┼──────────────┼─────┤
+│"Jennifer Aniston"    │54            │1    │
+├──────────────────────┼──────────────┼─────┤
+│"Tom Hanks"           │67            │1    │
+├──────────────────────┼──────────────┼─────┤
+
+//10)	Mostre os diretores que dirigiram atores comuns ao diretor Glauber Rocha mas em gêneros diferentes
+MATCH (a1:Artista)<-[e1:Elenco]-(f1:Filme)-[e2:Elenco]->(a2:Artista)<-[e3:Elenco]-(f2:Filme)-[e4:Elenco]->(a3:Artista)
+WHERE a1 <> a3 AND a2 <> a3 AND f1 <> f2
+AND a1.nome =~ '(?i).*glauber.*'
+AND e1.tipo_participação =~ '(?i).*dir.*'
+AND e2.tipo_participação =~ '(?i).*act.*'
+AND e3.tipo_participação =~ '(?i).*act.*'
+AND e4.tipo_participação =~ '(?i).*dir.*'
+AND f1.generos <> f2.generos
+AND NOT (a1)<-[:Elenco]-(:Filme)-[:Elenco]->(a3)
+RETURN f1.generos AS Glauber_Gen, f2.generos AS Outros_Gen, a3.nome AS Outros_Dir
+//RETURN *
+//RETURN a3.nome, COUNT(a3.nome) AS Força
+//ORDER BY Força DESC
+
