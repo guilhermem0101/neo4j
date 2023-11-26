@@ -1,5 +1,7 @@
 //Importação dos dados
 
+
+--------------------------------- ex1----------------------------------
 //Personagens (modifiquei o nome das colunas no  aqrquivo csv)
 LOAD CSV WITH HEADERS FROM "file:///got-s1-nodes.csv" AS per
 FIELDTERMINATOR ','
@@ -28,17 +30,10 @@ MATCH (p1) -[i:Interage]->(p2)
 RETURN *
 
 
-//Alterando os nomes 
-MATCH (p:Personagen {nome: 'Jon'})
-SET p.nome = coalesce(p.nome, '') + ' Snow'
-RETURN *
+--------------------------------- ex2----------------------------------
 
-// Adicionando sobrenomes por casa
-MATCH (c:Casa)<-[per:Pertence]-(p:Personagen)
-WHERE c.nome_casa =~ 'Stark'
-SET p.nome = coalesce(p.nome, '') + ' Stark'
-RETURN *
 
+//Criar nós para cada casa
 
 //Casa Stark
 CREATE (c:Casa {nome_casa: 'Stark', membros: ['Arya', 'Bran', 'Brandon', 'Rickard Stark', 'Sansa','Robb', 'Ned']})
@@ -61,52 +56,35 @@ CREATE (c:Casa {nome_casa: 'Baratheon', membros: ['Robert', 'Stannis', 'Renly']}
 // Patrulha da Noite
 CREATE (c:Casa {nome_casa: 'Patrulha da Noite', membros: ['Aemon', 'Benjen', 'Grenn', 'Jon Snow', 'Sam', 'Will']})
 
-// Criando arestas
+
+// Criando arestas para relacionar casa com personagens
 MATCH (p:Personagen), (c:Casa)
 WHERE p.nome IN c.membros
 MERGE (p)-[:Pertence]->(c)
+RETURN *
+
+//Alterando os nomes 
+MATCH (p:Personagem {nome: 'Jon'})
+SET p.nome = coalesce(p.nome, '') + ' Snow'
+RETURN *
+
+// Adicionando sobrenomes por casa (executar um comando por casa)
+MATCH (c:Casa)<-[per:Pertence]-(p:Personagem)
+WHERE c.nome_casa =~ 'Stark'
+SET p.nome = coalesce(p.nome, '') + ' Stark'
+RETURN *
 
 // Vizualizando
 MATCH (p)-[:Pertence]->(c)
 RETURN *
 
-// Alterando o tipo "peso"
+// Alterando o tipo "peso" para inteiro
 MATCH ()-[i:Interage]->()
 SET i.peso = toInteger(i.peso)
 
+--------------------------------- ex3----------------------------------
 
-
-
-
-
-
-//Colocando meu personagem em uma casas
-MATCH (c:Casa {nome_casa: 'Lannister'})
-SET c.membros = c.membros + 'Guilherme Lannister'
-
-//Criando arestas para meu personagem
-MATCH (p1:Personagen), (p2:Personagen)
-WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tywin Lannister'
-CREATE (p1)-[i:Interage {peso: 1}]->(p2)
-
-MATCH (p1:Personagen), (p2:Personagen)
-WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Jon Snow'
-CREATE (p1)-[i:Interage {peso:31}]->(p2)
-
-MATCH (p1:Personagen), (p2:Personagen)
-WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Ned Stark'
-CREATE (p1)-[i:Interage {peso:23}]->(p2)
-
-MATCH (p1:Personagen), (p2:Personagen)
-WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tyrion Lannister'
-CREATE (p1)-[i:Interage {peso:29}]->(p2)
-
-
-MATCH (p1:Personagen), (p2:Personagen)
-WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ '	Jaime Lannister'
-CREATE (p1)-[i:Interage {peso:15}]->(p2)
-
-Criando tipos de interações
+//Criando tipos de interações
 MATCH (p1)<-[i:Interage]-(p2)
 WHERE p1.nome =~ 'Ned Stark'
 AND p2.nome =~ 'Arya Stark'
@@ -126,6 +104,40 @@ MATCH (p1)-[i:Interage]->(p2)
 WHERE p1.nome =~ 'Jon Snow'
 AND p2.nome =~ 'Ned Stark'
 SET i.parentesco = 'Filho Bastardo'
+
+
+--------------------------------- ex4----------------------------------
+
+// Criando meu personagem
+CREATE (:Personagem {id_personagem: 'GUI', nome: 'Guilherme Lannister'})
+
+//Colocando meu personagem em uma casas
+MATCH (c:Casa {nome_casa: 'Lannister'})
+SET c.membros = c.membros + 'Guilherme Lannister'
+
+//Criando arestas para meu personagem
+MATCH (p1:Personagem), (p2:Personagem)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tywin Lannister'
+CREATE (p1)-[i:Interage {peso: 1}]->(p2)
+
+MATCH (p1:Personagem), (p2:Personagem)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Jon Snow'
+CREATE (p1)-[i:Interage {peso:31}]->(p2)
+
+MATCH (p1:Personagem), (p2:Personagem)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Ned Stark'
+CREATE (p1)-[i:Interage {peso:23}]->(p2)
+
+MATCH (p1:Personagem), (p2:Personagem)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tyrion Lannister'
+CREATE (p1)-[i:Interage {peso:29}]->(p2)
+
+
+MATCH (p1:Personagem), (p2:Personagem)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ '	Jaime Lannister'
+CREATE (p1)-[i:Interage {peso:15}]->(p2)
+
+
 
 
 
@@ -176,7 +188,7 @@ ORDER BY Quantidade DESC
 
 iii)Mostre a rede dos personagens da Casa “Stark”;
 
-MATCH (c:Casa)<-[per:Pertence]-(p1:Personagen)-[i:Interage]->(p2:Personagen)
+MATCH (c:Casa)<-[per:Pertence]-(p1:Personagem)-[i:Interage]->(p2:Personagem)
 WHERE c.nome_casa =~ 'Stark'
 RETURN *
 
@@ -189,7 +201,7 @@ RETURN *
 
 v) Mostre o caminho de interações entre “Jon Snow” e “Dayneris Targarien”;
 
-MATCH (p1:Personagen {nome: "Jon Snow"}), (p2:Personagen {nome: "Daenerys Targaryen"})
+MATCH (p1:Personagem {nome: "Jon Snow"}), (p2:Personagem {nome: "Daenerys Targaryen"})
 MATCH c=shortestPath((p1)-[:Interage*]-(p2))
 RETURN c
 
@@ -269,11 +281,18 @@ AND NOT ((p2)-[:Pertence]->(:Casa {nome_casa:'Stark'}))
 AND NOT ((p2)-[:Pertence]->(:Casa {nome_casa:'Lannister'}))
 RETURN *
 
+
+xi)Mostre os personagens da “Patrulha do Norte” que não interagem com o seu personagem.
+
+MATCH (c:Casa {nome_casa:'Patrulha da Noite'})<-[per:Pertence]-(p1), (p2:Personagen {nome:'Guilherme Lannister'})
+WHERE NOT (p1)-[:Interage]-(p2)
+RETURN p1
+
 xii) Mostre os personagens que tem mais interações (contagem);
 
 MATCH (p:Personagen)-[i:Interage]-()
-WITH p, count(i) AS numIter
-RETURN p.nome AS Nome, numIter
+WITH p.nome AS Nome, count(i) AS numIter
+RETURN  Nome, numIter
 ORDER BY numIter DESC
 
 
@@ -295,5 +314,23 @@ ORDER BY numIter DESC
 
 xiii) Mostre os personagens que tem maior peso de interação para cada casa.
 
+MATCH (c:Casa)<-[per:Pertence]-(p:Personagen)-[i:Interage]-()
+WITH p.nome AS Nome, c.nome_casa  AS Casa, max(i.peso) AS peso
+RETURN Nome, peso, Casa
+ORDER BY peso DESC
 
+5 primeiros somente
+╒═════════════════════╤════╤═══════════════════╕
+│Nome                 │peso│Casa               │
+╞═════════════════════╪════╪═══════════════════╡
+│"Ned Stark"          │192 │"Stark"            │
+├─────────────────────┼────┼───────────────────┤
+│"Robert Baratheon"   │192 │"Baratheon"        │
+├─────────────────────┼────┼───────────────────┤
+│"Daenerys Targaryen" │154 │"Targaryen"        │
+├─────────────────────┼────┼───────────────────┤
+│"Jon Snow"           │121 │"Patrulha da Noite"│
+├─────────────────────┼────┼───────────────────┤
+│"Sam"                │121 │"Patrulha da Noite"│
+├─────────────────────┼────┼───────────────────┤
 
