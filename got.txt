@@ -1,3 +1,20 @@
+//Importação dos dados
+
+//Personagens (modifiquei o nome das colunas no  aqrquivo csv)
+LOAD CSV WITH HEADERS FROM "file:///got-s1-nodes.csv" AS per
+FIELDTERMINATOR ','
+CREATE (:Personagem {
+	id_personagem:per.id_personagem,
+	nome:per.nome})
+
+//Relações
+LOAD CSV WITH HEADERS FROM "file:///got-s1-edges.csv" AS re
+FIELDTERMINATOR ','
+CREATE (:Relação {
+	origem:re.Source,
+	alvo:re.Target,
+    	peso:re.Weight})
+
 //Criação de conexões
 MATCH (p1:Personagem),(r:Relação),(p2:Personagem)
 WHERE p1.id_personagem = r.origem
@@ -76,8 +93,20 @@ MATCH (p1:Personagen), (p2:Personagen)
 WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Jon Snow'
 CREATE (p1)-[i:Interage {peso:31}]->(p2)
 
+MATCH (p1:Personagen), (p2:Personagen)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Ned Stark'
+CREATE (p1)-[i:Interage {peso:23}]->(p2)
+
+MATCH (p1:Personagen), (p2:Personagen)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ 'Tyrion Lannister'
+CREATE (p1)-[i:Interage {peso:29}]->(p2)
 
 
+MATCH (p1:Personagen), (p2:Personagen)
+WHERE p1.nome =~ 'Guilherme Lannister' AND p2.nome =~ '	Jaime Lannister'
+CREATE (p1)-[i:Interage {peso:15}]->(p2)
+
+Criando tipos de interações
 MATCH (p1)<-[i:Interage]-(p2)
 WHERE p1.nome =~ 'Ned Stark'
 AND p2.nome =~ 'Arya Stark'
@@ -97,3 +126,174 @@ MATCH (p1)-[i:Interage]->(p2)
 WHERE p1.nome =~ 'Jon Snow'
 AND p2.nome =~ 'Ned Stark'
 SET i.parentesco = 'Filho Bastardo'
+
+
+
+---------------------------------------CONSULTAS-------------------------------------------
+i) Mostre a contagem de personagens por Casa;
+MATCH (p)-[per:Pertence]->(c) 
+RETURN c.nome_casa AS Casa, COUNT(per) AS Quantidade
+ORDER BY Quantidade DESC
+
+╒═══════════════════╤══════════╕
+│Casa               │Quantidade│
+╞═══════════════════╪══════════╡
+│"Stark"            │7         │
+├───────────────────┼──────────┤
+│"Patrulha da Noite"│6         │
+├───────────────────┼──────────┤
+│"Lannister"        │5         │
+├───────────────────┼──────────┤
+│"Targaryen"        │3         │
+├───────────────────┼──────────┤
+│"Baratheon"        │3         │
+├───────────────────┼──────────┤
+│"Greyjoy"          │2         │
+├───────────────────┼──────────┤
+│"Tyrell"           │1         │
+└───────────────────┴──────────┘
+
+ii) Repita a consulta acima e mostre por tipo de interação também;
+
+MATCH (p1)-[i:Interage]-(p2)
+RETURN i.parentesco AS Casa, COUNT(i.parentesco) AS Quantidade
+ORDER BY Quantidade DESC
+
+╒════════════════╤══════════╕
+│Parentesco      │Quantidade│
+╞════════════════╪══════════╡
+│"Irmão/Amante"  │1         │
+├────────────────┼──────────┤
+│"Filha"         │1         │
+├────────────────┼──────────┤
+│"Filho Bastardo"│1         │
+├────────────────┼──────────┤
+│"Irmão"         │1         │
+├────────────────┼──────────┤
+│null            │0         │
+└────────────────┴──────────┘
+
+
+iii)Mostre a rede dos personagens da Casa “Stark”;
+
+MATCH (c:Casa)<-[per:Pertence]-(p1:Personagen)-[i:Interage]->(p2:Personagen)
+WHERE c.nome_casa =~ 'Stark'
+RETURN *
+
+
+iv)Mostre a sua rede de interação;
+
+MATCH (p1)-[i:Interage]-(p2)
+WHERE p1.nome =~ 'Guilherme Lannister'
+RETURN *
+
+v) Mostre o caminho de interações entre “Jon Snow” e “Dayneris Targarien”;
+
+MATCH (p1:Personagen {nome: "Jon Snow"}), (p2:Personagen {nome: "Daenerys Targaryen"})
+MATCH c=shortestPath((p1)-[:Interage*]-(p2))
+RETURN c
+
+vi)Mostre os personagens cujo peso da interação é superior a 50 : personagem 1-casa1 , peso, personagem 2-casa2;
+
+MATCH (c:Casa)<-[per1:Pertence]-(p1)-[i:Interage]->(p2)-[per2:Pertence]->(c:Casa)
+WHERE i.peso > 50
+RETURN *
+
+vii) Mostre os personagens que interagem diretamente com “Tyrion” (1º círculo);
+
+MATCH (p1)-[i:Interage]-(p2)
+WHERE p1.nome =~ '(?i).*tyrion.*'
+RETURN *
+
+
+viii) Mostre os personagens que não interagem diretamente com “Tyrion” (2º círculo) e quem é o personagem intermediário;
+
+MATCH (p1)-[i1:Interage]-(p2)-[i2:Interage]-(p3)
+WHERE p1.nome =~ '(?i).*tyrion.*'
+AND p1<>p3
+AND NOT (p1)-[:Interage]-(p3)
+RETURN p3.nome AS SegundoGrau, COLLECT(p2.nome) AS Intermediarios
+
+5 primeiros somente
+╒═════════════════════╤═════════════════════════════╕
+│SegundoGrau          │Intermediarios               │
+╞═════════════════════╪═════════════════════════════╡
+│"Meryn"              │["Ned Stark", "Marillion", "A│
+│                     │rya Stark", "Joffrey", "Sando│
+│                     │r", "Cersei Lannister"]      │
+├─────────────────────┼─────────────────────────────┤
+│"Brandon Stark"      │["Ned Stark", "Bran Stark", "│
+│                     │Catelyn", "Jon Snow"]        │
+├─────────────────────┼─────────────────────────────┤
+│"Mycah"              │["Ned Stark", "Arya Stark", "│
+│                     │Joffrey"]                    │
+├─────────────────────┼─────────────────────────────┤
+│"Gregor"             │["Ned Stark", "Robert Barathe│
+│                     │on", "Petyr", "Sandor"]      │
+├─────────────────────┼─────────────────────────────┤
+│"Jorah"              │["Ned Stark", "Varys"]       │
+├─────────────────────┼─────────────────────────────┤
+
+
+ix)Repita a consulta acima, agora considere como parâmetro o peso da interação para ordenar quem tem mais chance de ser 
+“apresentado” ao Tyrion;
+
+MATCH (p1)-[i1:Interage]-(p2)-[i2:Interage]-(p3)
+WHERE p1.nome =~ 'Tyrion Lannister'
+AND p1<>p3
+AND NOT (p1)-[:Interage]-(p3)
+RETURN p3.nome AS SegundoGrau,p2.nome AS PrimeiroGrua, MAX(i1.peso) AS Peso
+ORDER BY Peso DESC
+
+5 primeiros somente
+╒═════════════════════╤══════════════════╤════╕
+│SegundoGrau          │PrimeiroGrua      │Peso│
+╞═════════════════════╪══════════════════╪════╡
+│"Pycelle"            │"Tywin Lannister" │61  │
+├─────────────────────┼──────────────────┼────┤
+│"Greatjon"           │"Tywin Lannister" │61  │
+├─────────────────────┼──────────────────┼────┤
+│"Addam"              │"Tywin Lannister" │61  │
+├─────────────────────┼──────────────────┼────┤
+│"Sam"                │"Jon Snow"        │45  │
+├─────────────────────┼──────────────────┼────┤
+│"Will"               │"Jon Snow"        │45  │
+├─────────────────────┼──────────────────┼────┤
+
+
+x) Mostre os personagens próximos de “Littlefinger” que não interagem com membros da casa “Stark” ou “Lannister”;
+
+MATCH (p1)-[i1:Interage]-(p2)
+WHERE p1.nome = 'Petyr'
+AND NOT ((p2)-[:Pertence]->(:Casa {nome_casa:'Stark'}))
+AND NOT ((p2)-[:Pertence]->(:Casa {nome_casa:'Lannister'}))
+RETURN *
+
+xii) Mostre os personagens que tem mais interações (contagem);
+
+MATCH (p:Personagen)-[i:Interage]-()
+WITH p, count(i) AS numIter
+RETURN p.nome AS Nome, numIter
+ORDER BY numIter DESC
+
+
+5 primeiros somente
+╒═════════════════════╤═══════╕
+│Nome                 │numIter│
+╞═════════════════════╪═══════╡
+│"Ned Stark"          │58     │
+├─────────────────────┼───────┤
+│"Tyrion Lannister"   │42     │
+├─────────────────────┼───────┤
+│"Catelyn"            │36     │
+├─────────────────────┼───────┤
+│"Robert Baratheon"   │36     │
+├─────────────────────┼───────┤
+│"Robb Stark"         │30     │
+├─────────────────────┼───────┤
+
+
+xiii) Mostre os personagens que tem maior peso de interação para cada casa.
+
+
+
